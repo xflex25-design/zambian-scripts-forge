@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Carlito:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius: 1.25rem;
+  --background: oklch(0.982 0.008 95);
+  --foreground: oklch(0.2 0.02 160);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.02 160);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.02 160);
+  --primary: oklch(0.45 0.11 155);
+  --primary-foreground: oklch(0.99 0.005 95);
+  --primary-glow: oklch(0.58 0.13 150);
+  --secondary: oklch(0.95 0.025 150);
+  --secondary-foreground: oklch(0.32 0.08 155);
+  --muted: oklch(0.955 0.01 95);
+  --muted-foreground: oklch(0.5 0.02 160);
+  --accent: oklch(0.72 0.14 55);
+  --accent-foreground: oklch(0.99 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(0.91 0.012 110);
+  --input: oklch(0.9 0.012 110);
+  --ring: oklch(0.58 0.13 150);
+  --paper: oklch(1 0 0);
+  --paper-ink: oklch(0.18 0 0);
+  --gradient-primary: linear-gradient(135deg, var(--primary), var(--primary-glow));
+  --gradient-hero: radial-gradient(ellipse at 80% 0%, oklch(0.93 0.05 150 / 0.7), transparent 60%), radial-gradient(ellipse at 0% 100%, oklch(0.94 0.04 60 / 0.5), transparent 55%);
+  --shadow-soft: 0 1px 2px oklch(0.3 0.03 160 / 0.04), 0 8px 24px -8px oklch(0.3 0.05 160 / 0.12);
+  --shadow-paper: 0 2px 4px oklch(0 0 0 / 0.04), 0 20px 40px -16px oklch(0.3 0.04 160 / 0.22);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+}
+
+@media print {
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area { position: absolute; inset: 0; box-shadow: none !important; border: 0 !important; padding: 0 !important; margin: 0 !important; width: 100% !important; }
+  @page { size: A4; margin: 22mm 20mm; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise, .animate-float { animation: none; }
+}
