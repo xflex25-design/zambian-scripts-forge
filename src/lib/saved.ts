@@ -86,6 +86,29 @@ export async function saveDocument(title: string, content: string): Promise<void
   saveLocalDocs(docs);
 }
 
+export async function updateDocument(id: string, title: string, content: string): Promise<void> {
+  if (isSupabaseConfigured) {
+    const { error } = await supabase
+      .from("saved_documents")
+      .update({ title, content })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    return;
+  }
+
+  // Local storage mode
+  const docs = getLocalDocs();
+  const idx = docs.findIndex((d) => d.id === id);
+  if (idx !== -1) {
+    docs[idx] = {
+      ...docs[idx],
+      title,
+      content,
+    };
+    saveLocalDocs(docs);
+  }
+}
+
 export async function deleteDocument(id: string): Promise<void> {
   if (isSupabaseConfigured) {
     const { error } = await supabase.from("saved_documents").delete().eq("id", id);

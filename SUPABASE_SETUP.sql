@@ -12,7 +12,7 @@ create table if not exists public.saved_documents (
 alter table public.saved_documents enable row level security;
 
 revoke all on table public.saved_documents from anon, authenticated;
-grant select, insert, delete on table public.saved_documents to authenticated;
+grant select, insert, update, delete on table public.saved_documents to authenticated;
 
 drop policy if exists "users can select their own documents" on public.saved_documents;
 create policy "users can select their own documents"
@@ -22,6 +22,12 @@ using ((select auth.uid()) is not null and (select auth.uid()) = user_id);
 drop policy if exists "users can insert their own documents" on public.saved_documents;
 create policy "users can insert their own documents"
 on public.saved_documents for insert to authenticated
+with check ((select auth.uid()) is not null and (select auth.uid()) = user_id);
+
+drop policy if exists "users can update their own documents" on public.saved_documents;
+create policy "users can update their own documents"
+on public.saved_documents for update to authenticated
+using ((select auth.uid()) is not null and (select auth.uid()) = user_id)
 with check ((select auth.uid()) is not null and (select auth.uid()) = user_id);
 
 drop policy if exists "users can delete their own documents" on public.saved_documents;

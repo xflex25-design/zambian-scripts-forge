@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MessageCircle, ArrowLeft, ArrowRight, Check, Copy, Download, Loader2, Mic, Pencil, RotateCcw, Save, Sparkles, Undo2, ScanText } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
@@ -31,7 +31,25 @@ export function Create() {
   const [busy, setBusy] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  // Enforce sign in before creating documents
+  useEffect(() => {
+    if (!loading && !user) {
+      toast.info("Please sign in or create an account to start creating documents.");
+      const searchStr = route.search.toString();
+      const currentUrl = route.path + (searchStr ? `?${searchStr}` : "");
+      navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`);
+    }
+  }, [loading, user, route.path, route.search]);
+
+  if (loading || !user) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-hero">
+        <Loader2 className="size-6 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const qs = t ? visibleQuestions(t, answers) : [];
   const q = qs[Math.min(step, qs.length - 1)];
