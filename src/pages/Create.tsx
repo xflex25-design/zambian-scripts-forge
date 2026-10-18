@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { MessageCircle, ArrowLeft, ArrowRight, Check, Copy, Download, Loader2, Mic, Pencil, RotateCcw, Sparkles, Undo2, ScanText } from "lucide-react";
+import { MessageCircle, ArrowLeft, ArrowRight, Check, Copy, Download, Loader2, Mic, Pencil, RotateCcw, Save, Sparkles, Undo2, ScanText } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { Paper } from "@/components/Paper";
@@ -10,6 +10,8 @@ import { generateDocument, improveDocument } from "@/lib/docs";
 import { useSpeech } from "@/hooks/use-speech";
 import { cn } from "@/lib/utils";
 import { navigate, useRoute, matchRoute } from "@/lib/router";
+import { useAuth } from "@/lib/auth";
+import { saveDocument } from "@/lib/saved";
 
 const IMPROVE = ["More professional", "Shorter", "More confident", "Simpler", "More polite", "Add more detail"];
 
@@ -27,6 +29,8 @@ export function Create() {
   const [history, setHistory] = useState<ZDoc[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const { user } = useAuth();
 
   const qs = t ? visibleQuestions(t, answers) : [];
   const q = qs[Math.min(step, qs.length - 1)];
@@ -105,6 +109,22 @@ export function Create() {
 
   if (doc) {
     const text = docToText(doc);
+    const saveToAccount = async () => {
+      if (!user) {
+        toast.info("Log in to save this document to your account.");
+        navigate("/login");
+        return;
+      }
+      setSaving(true);
+      try {
+        await saveDocument(doc.subject || t.title, text);
+        toast.success("Saved to your account.");
+      } catch (e) {
+        toast.error((e as Error).message);
+      } finally {
+        setSaving(false);
+      }
+    };
     return (
       <div className="min-h-screen bg-hero">
         <Header />
@@ -121,6 +141,9 @@ export function Create() {
             </div>
             <aside className="space-y-2.5">
               <Button className="h-12 w-full rounded-2xl bg-gradient-primary" onClick={() => window.print()}><Download /> Download PDF</Button>
+              <Button variant="outline" className="h-11 w-full justify-start rounded-2xl bg-card" onClick={saveToAccount} disabled={saving} data-testid="create-save-btn">
+                {saving ? <Loader2 className="animate-spin" /> : <Save />} {user ? "Save to my account" : "Log in to save"}
+              </Button>
               <Button variant="outline" className="h-11 w-full justify-start rounded-2xl bg-card" onClick={() => { navigator.clipboard.writeText(text); toast.success("Copied"); }}><Copy /> Copy text</Button>
               <Button variant="outline" className="h-11 w-full justify-start rounded-2xl bg-card" onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank"); }}>
                 <MessageCircle /> Share on WhatsApp

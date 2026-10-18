@@ -5,6 +5,9 @@ import { Home } from "@/pages/Home";
 import { Create } from "@/pages/Create";
 import { ImageToText } from "@/pages/ImageToText";
 import { Landing, LANDINGS } from "@/pages/Landing";
+import { Login } from "@/pages/Login";
+import { ResetPassword } from "@/pages/ResetPassword";
+import { Account } from "@/pages/Account";
 import { getDocType } from "@/lib/documents";
 
 const SITE_URL = "https://zalemba.lovable.app";
@@ -97,6 +100,12 @@ function App() {
     page = <ImageToText />;
   } else if (matchRoute("/landing/$slug", route.path)) {
     page = <Landing />;
+  } else if (route.path === "/login") {
+    page = <Login />;
+  } else if (route.path === "/reset-password") {
+    page = <ResetPassword />;
+  } else if (route.path === "/account") {
+    page = <Account />;
   } else {
     page = (
       <div className="min-h-screen bg-hero flex items-center justify-center px-4">
