@@ -6,6 +6,7 @@ import { Button } from "@/components/Button";
 import { useAuth } from "@/lib/auth";
 import { listDocuments, deleteDocument, type SavedDoc } from "@/lib/saved";
 import { navigate } from "@/lib/router";
+import { downloadDocAsTextPdf } from "@/lib/pdf";
 
 export function Account() {
   const { user, loading } = useAuth();
@@ -95,13 +96,27 @@ export function Account() {
               <Button variant="outline" className="rounded-2xl bg-card" onClick={() => { navigator.clipboard.writeText(open.content); toast.success("Copied"); }}>
                 <Copy className="size-4" /> Copy
               </Button>
+              <Button
+                variant="outline"
+                className="rounded-2xl bg-card font-semibold"
+                onClick={() => {
+                  try {
+                    downloadDocAsTextPdf(open.content, open.title);
+                    toast.success("PDF downloaded successfully!");
+                  } catch (e) {
+                    toast.error("Failed to generate PDF: " + (e as Error).message);
+                  }
+                }}
+              >
+                <Download className="size-4" /> Download as PDF
+              </Button>
               <Button variant="outline" className="rounded-2xl bg-card" onClick={() => {
                 const blob = new Blob([open.content], { type: "text/plain" });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url; a.download = `${open.title}.txt`; a.click(); URL.revokeObjectURL(url);
               }}>
-                <Download className="size-4" /> Download
+                Download .txt
               </Button>
               <Button variant="ghost" className="ml-auto rounded-2xl" onClick={() => setOpen(null)}>Close</Button>
             </div>

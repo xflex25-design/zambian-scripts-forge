@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { navigate, useRoute, matchRoute } from "@/lib/router";
 import { useAuth } from "@/lib/auth";
 import { saveDocument } from "@/lib/saved";
+import { downloadElementAsPdf, downloadDocAsTextPdf } from "@/lib/pdf";
 
 const IMPROVE = ["More professional", "Shorter", "More confident", "Simpler", "More polite", "Add more detail"];
 
@@ -107,8 +108,37 @@ export function Create() {
     }
   };
 
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+
   if (doc) {
     const text = docToText(doc);
+
+    const handleDownloadPdf = async () => {
+      setDownloadingPdf(true);
+      toast.info("Preparing your PDF...");
+      try {
+        const el = document.querySelector(".print-area") as HTMLElement | null;
+        const title = doc.subject || t.title || "Document";
+        if (el) {
+          await downloadElementAsPdf(el, title);
+        } else {
+          downloadDocAsTextPdf(doc, title);
+        }
+        toast.success("PDF downloaded successfully!");
+      } catch (err) {
+        console.warn("Element PDF rendering error, falling back to text PDF:", err);
+        try {
+          const title = doc.subject || t.title || "Document";
+          downloadDocAsTextPdf(doc, title);
+          toast.success("PDF downloaded successfully!");
+        } catch (fallbackErr) {
+          toast.error("Could not generate PDF: " + (fallbackErr as Error).message);
+        }
+      } finally {
+        setDownloadingPdf(false);
+      }
+    };
+
     const saveToAccount = async () => {
       if (!user) {
         try {
@@ -151,7 +181,13 @@ export function Create() {
               {busy && <div className="absolute inset-0 grid place-items-center rounded-lg bg-background/70 backdrop-blur-sm"><span className="flex items-center gap-2 font-medium"><Loader2 className="animate-spin" />{busy}</span></div>}
             </div>
             <aside className="space-y-2.5">
-              <Button className="h-12 w-full rounded-2xl bg-gradient-primary" onClick={() => window.print()}><Download /> Download PDF</Button>
+              <Button
+                className="h-12 w-full rounded-2xl bg-gradient-primary font-semibold"
+                onClick={handleDownloadPdf}
+                disabled={downloadingPdf}
+              >
+                {downloadingPdf ? <Loader2 className="animate-spin size-4" /> : <Download className="size-4" />} Download as PDF
+              </Button>
               <Button variant="outline" className="h-11 w-full justify-start rounded-2xl bg-card" onClick={saveToAccount} disabled={saving} data-testid="create-save-btn">
                 {saving ? <Loader2 className="animate-spin" /> : <Save />} {user ? "Save to my account" : "Log in to save"}
               </Button>
