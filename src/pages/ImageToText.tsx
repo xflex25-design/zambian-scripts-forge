@@ -5,8 +5,10 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/Button";
 import { DOC_TYPES } from "@/lib/documents";
 import { navigate } from "@/lib/router";
+import { useAuth } from "@/lib/auth";
 
 export function ImageToText() {
+  const { user } = useAuth();
   const [image, setImage] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -177,7 +179,15 @@ export function ImageToText() {
                 {DOC_TYPES.filter((d) => d.popular).map((d) => (
                   <button
                     key={d.id}
-                    onClick={() => navigate(`/create/${d.id}?ocr=${encodeURIComponent(text)}`)}
+                    onClick={() => {
+                      const target = `/create/${d.id}?ocr=${encodeURIComponent(text)}`;
+                      if (!user) {
+                        toast.info("Please sign in or create an account to start creating documents.");
+                        navigate(`/login?redirect=${encodeURIComponent(target)}`);
+                        return;
+                      }
+                      navigate(target);
+                    }}
                     className="flex items-center justify-between rounded-2xl border bg-muted/50 px-4 py-3 text-sm font-medium transition hover:border-primary/40 hover:bg-secondary"
                   >
                     {d.title}

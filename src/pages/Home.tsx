@@ -8,13 +8,25 @@ import { DOC_TYPES, FINDER } from "@/lib/documents";
 import { recommendDocument } from "@/lib/docs";
 import { useSpeech } from "@/hooks/use-speech";
 import { navigate } from "@/lib/router";
+import { useAuth } from "@/lib/auth";
+
 const hero = "https://images.pexels.com/photos/7971558/pexels-photo-7971558.jpeg?auto=compress&cs=tinysrgb&h=650&w=940";
 
 export function Home() {
   const [need, setNeed] = useState("");
   const [busy, setBusy] = useState(false);
   const [finder, setFinder] = useState(false);
+  const { user } = useAuth();
   const speech = useSpeech((t) => setNeed((v) => (v ? v + " " : "") + t));
+
+  const startCreate = (targetUrl: string) => {
+    if (!user) {
+      toast.info("Please sign in or create an account to start creating documents.");
+      navigate(`/login?redirect=${encodeURIComponent(targetUrl)}`);
+      return;
+    }
+    navigate(targetUrl);
+  };
 
   const go = async () => {
     if (need.trim().length < 3) return setFinder(true);
@@ -22,7 +34,8 @@ export function Home() {
     try {
       const r = await recommendDocument(need);
       toast.success(`You probably need a ${r.label}`);
-      navigate(`/create/${r.type}?note=${encodeURIComponent(need)}`);
+      const target = `/create/${r.type}?note=${encodeURIComponent(need)}`;
+      startCreate(target);
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -93,7 +106,7 @@ export function Home() {
             {DOC_TYPES.filter((d) => d.popular).map((d) => (
               <button
                 key={d.id}
-                onClick={() => navigate(`/create/${d.id}`)}
+                onClick={() => startCreate(`/create/${d.id}`)}
                 className="group relative overflow-hidden rounded-3xl border bg-card p-4 text-left shadow-soft transition duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-paper active:scale-[0.98] sm:p-5"
               >
                 <span className="absolute inset-x-0 top-0 h-1 bg-gradient-primary opacity-0 transition group-hover:opacity-100" />
@@ -153,7 +166,10 @@ export function Home() {
               {FINDER.map((f) => (
                 <button
                   key={f.label}
-                  onClick={() => navigate(`/create/${f.to}`)}
+                  onClick={() => {
+                    setFinder(false);
+                    startCreate(`/create/${f.to}`);
+                  }}
                   className="rounded-2xl border bg-muted/50 p-3 text-left transition hover:border-primary/40 hover:bg-secondary"
                 >
                   {f.to === "helsb" ? <DocIcon id="helsb" emoji={f.emoji} className="size-9 bg-card" /> : <span className="text-2xl">{f.emoji}</span>}

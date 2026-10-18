@@ -1,8 +1,10 @@
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/Button";
 import { DocIcon } from "@/components/DocIcon";
 import { navigate, useRoute, matchRoute } from "@/lib/router";
+import { useAuth } from "@/lib/auth";
 
 type LandingContent = {
   slug: string;
@@ -52,7 +54,7 @@ const LANDINGS: Record<string, LandingContent> = {
     title: "Job Application Letter",
     h1: "Zambia Job Application Letter — Sample & Format",
     metaTitle: "Zambia Job Application Letter Sample & Format | Zalemba",
-    metaDescription: "Write a professional job application letter in the correct Zambian format. Answer a few questions and get a ready-to-send letter — free, no login required.",
+    metaDescription: "Write a professional job application letter in the correct Zambian format. Answer a few questions and get a ready-to-send letter saved directly to your account.",
     intro: "A well-written job application letter is essential when applying for work in Zambia. Most employers expect a formal letter following the standard Zambian format, even for entry-level positions.",
     sections: [
       {
@@ -78,7 +80,7 @@ const LANDINGS: Record<string, LandingContent> = {
     title: "CV Generator",
     h1: "Zambia CV Generator — Create Your CV Online",
     metaTitle: "Zambian CV Generator & Maker — Free CV Template | Zalemba",
-    metaDescription: "Create a professional CV in the standard Zambian format. Answer simple questions and download your CV in minutes — free, no login needed.",
+    metaDescription: "Create a professional CV in the standard Zambian format. Answer simple questions and download your CV in minutes saved to your account.",
     intro: "A professional CV (Curriculum Vitae) is your first chance to make an impression on a potential employer. In Zambia, CVs follow a standard format with personal details, education, work experience, skills, and referees.",
     sections: [
       {
@@ -129,6 +131,16 @@ export function Landing() {
   const match = matchRoute("/landing/$slug", route.path);
   const slug = match?.slug ?? "";
   const content = LANDINGS[slug];
+  const { user } = useAuth();
+
+  const handleCta = (link: string) => {
+    if (!user && link.startsWith("/create")) {
+      toast.info("Please sign in or create an account to start creating documents.");
+      navigate(`/login?redirect=${encodeURIComponent(link)}`);
+      return;
+    }
+    navigate(link);
+  };
 
   if (!content) {
     return (
@@ -161,11 +173,11 @@ export function Landing() {
                 <DocIcon id={content.docId} emoji={content.emoji} className="size-12" />
                 <div>
                   <p className="font-semibold">{content.title}</p>
-                  <p className="text-sm text-muted-foreground">Answer a few questions — ready in minutes</p>
+                  <p className="text-sm text-muted-foreground">Answer a few questions — saved directly to your account</p>
                 </div>
               </div>
             )}
-            <Button className="mt-4 h-12 w-full rounded-2xl bg-gradient-primary text-base" onClick={() => navigate(content.ctaLink)}>
+            <Button className="mt-4 h-12 w-full rounded-2xl bg-gradient-primary text-base" onClick={() => handleCta(content.ctaLink)}>
               {content.cta} <ArrowRight />
             </Button>
           </div>
@@ -181,8 +193,8 @@ export function Landing() {
             <p className="flex items-center gap-2 font-semibold">
               <Check className="size-4 text-primary" /> {content.cta}
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">Free, no login required. Your document is ready in minutes.</p>
-            <Button className="mt-3 rounded-2xl bg-gradient-primary" onClick={() => navigate(content.ctaLink)}>
+            <p className="mt-1 text-sm text-muted-foreground">Sign in to save and download your documents anytime.</p>
+            <Button className="mt-3 rounded-2xl bg-gradient-primary" onClick={() => handleCta(content.ctaLink)}>
               Get started <ArrowRight />
             </Button>
           </div>

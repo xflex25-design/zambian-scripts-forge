@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Home, ScanText, LogIn, LayoutGrid, LogOut } from "lucide-react";
+import { toast } from "sonner";
 import { DOC_TYPES } from "@/lib/documents";
 import { DocIcon } from "@/components/DocIcon";
 import { navigate, useRoute } from "@/lib/router";
@@ -40,6 +41,15 @@ export function Header() {
   const isActive = (path: string) => {
     if (path === "/") return route.path === "/" && !route.params.type;
     return route.path === path;
+  };
+
+  const handleNavDoc = (id: string) => {
+    if (!user) {
+      toast.info("Please sign in or create an account to start creating documents.");
+      navigate(`/login?redirect=${encodeURIComponent(`/create/${id}`)}`);
+      return;
+    }
+    navigate(`/create/${id}`);
   };
 
   return (
@@ -95,7 +105,7 @@ export function Header() {
           {DOC_TYPES.filter((d) => d.popular).map((d) => (
             <button
               key={d.id}
-              onClick={() => navigate(`/create/${d.id}`)}
+              onClick={() => handleNavDoc(d.id)}
               className={`flex items-center gap-1.5 rounded-full border py-1 pl-1 pr-3 text-sm font-medium transition ${route.path === "/create" && route.params.type === d.id ? "border-primary bg-secondary text-secondary-foreground" : "bg-card hover:border-primary/40"}`}
             >
               <DocIcon id={d.id} emoji={d.emoji} className="size-7 rounded-full text-sm [&_img]:size-5" />

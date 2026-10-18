@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { MessageCircle, ArrowLeft, ArrowRight, Check, Copy, Download, Loader2, Mic, Pencil, RotateCcw, Save, Sparkles, Undo2, ScanText } from "lucide-react";
+import { MessageCircle, ArrowLeft, ArrowRight, Check, Copy, Download, Loader2, Mic, Pencil, RotateCcw, Save, Sparkles, Undo2, CheckCircle2, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { Paper } from "@/components/Paper";
@@ -11,7 +11,7 @@ import { useSpeech } from "@/hooks/use-speech";
 import { cn } from "@/lib/utils";
 import { navigate, useRoute, matchRoute } from "@/lib/router";
 import { useAuth } from "@/lib/auth";
-import { saveDocument } from "@/lib/saved";
+import { saveDocument, updateDocument } from "@/lib/saved";
 import { downloadElementAsPdf, downloadDocAsTextPdf } from "@/lib/pdf";
 
 const IMPROVE = ["More professional", "Shorter", "More confident", "Simpler", "More polite", "Add more detail"];
@@ -27,6 +27,7 @@ export function Create() {
   const [answers, setAnswers] = useState<Answers>(ocrText ? { extra: ocrText } : {});
   const [step, setStep] = useState(0);
   const [doc, setDoc] = useState<ZDoc | null>(null);
+  const [savedDocId, setSavedDocId] = useState<string | null>(null);
   const [history, setHistory] = useState<ZDoc[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -77,6 +78,17 @@ export function Create() {
       const d = await generateDocument(type, answers, note);
       setDoc(d);
       window.scrollTo({ top: 0 });
+      // Auto-save to user account
+      if (user) {
+        try {
+          const text = docToText(d);
+          const saved = await saveDocument(d.subject || t.title, text);
+          setSavedDocId(saved.id);
+          toast.success("Document created and saved to your account!");
+        } catch (saveErr) {
+          console.warn("Auto-save notice:", saveErr);
+        }
+      }
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -105,6 +117,16 @@ export function Create() {
       const d = await generateDocument(type, a, note);
       setDoc(d);
       window.scrollTo({ top: 0 });
+      if (user) {
+        try {
+          const text = docToText(d);
+          const saved = await saveDocument(d.subject || t.title, text);
+          setSavedDocId(saved.id);
+          toast.success("Document created and saved to your account!");
+        } catch (saveErr) {
+          console.warn("Auto-save notice:", saveErr);
+        }
+      }
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -119,6 +141,14 @@ export function Create() {
       const d = await improveDocument(doc, instruction);
       setHistory((h) => [...h, doc]);
       setDoc(d);
+      // Update saved version
+      if (savedDocId) {
+        try {
+          await updateDocument(savedDocId, d.subject || t.title, docToText(d));
+        } catch (err) {
+          console.warn("Could not update saved doc:", err);
+        }
+      }
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -158,25 +188,14 @@ export function Create() {
     };
 
     const saveToAccount = async () => {
-      if (!user) {
-        try {
-          localStorage.setItem(
-            "zalemba_pending_doc",
-            JSON.stringify({
-              title: doc.subject || t.title,
-              content: text,
-            })
-          );
-        } catch {
-          // ignore
-        }
-        toast.info("Log in to save this document to your account.");
-        navigate(`/login?redirect=${encodeURIComponent(`/create/${type}`)}`);
-        return;
-      }
       setSaving(true);
       try {
-        await saveDocument(doc.subject || t.title, text);
+        if (savedDocId) {
+          await updateDocument(savedDocId, doc.subject || t.title, text);
+        } else {
+          const saved = await saveDocument(doc.subject || t.title, text);
+          setSavedDocId(saved.id);
+        }
         toast.success("Saved to your account.");
       } catch (e) {
         toast.error((e as Error).message);
@@ -184,6 +203,7 @@ export function Create() {
         setSaving(false);
       }
     };
+
     return (
       <div className="min-h-screen bg-hero">
         <Header />
@@ -191,11 +211,35 @@ export function Create() {
           <div className="text-center">
             <span className="mx-auto grid size-12 place-items-center rounded-full bg-gradient-primary text-primary-foreground shadow-soft"><Check /></span>
             <h1 className="mt-3 font-display text-3xl font-bold">Your document is ready!</h1>
-            <p className="text-sm text-muted-foreground">Personalised using your information.</p>
+            <p className="text-sm text-muted-foreground">Personalised and formatted to authentic Zambian standards.</p>
+            {savedDocId && (
+              <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                <CheckCircle2 className="size-3.5" /> Auto-saved to your Saved Documents
+              </div>
+            )}
           </div>
           <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
             <div className="relative">
-              {editing ? <Editor doc={doc} onSave={(d) => { setHistory((h) => [...h, doc]); setDoc(d); setEditing(false); }} /> : <Paper doc={doc} className="max-w-[720px]" />}
+              {editing ? (
+                <Editor
+                  doc={doc}
+                  onSave={async (d) => {
+                    setHistory((h) => [...h, doc]);
+                    setDoc(d);
+                    setEditing(false);
+                    if (savedDocId) {
+                      try {
+                        await updateDocument(savedDocId, d.subject || t.title, docToText(d));
+                        toast.success("Changes saved to your account.");
+                      } catch {
+                        // ignore
+                      }
+                    }
+                  }}
+                />
+              ) : (
+                <Paper doc={doc} className="max-w-[720px]" />
+              )}
               {busy && <div className="absolute inset-0 grid place-items-center rounded-lg bg-background/70 backdrop-blur-sm"><span className="flex items-center gap-2 font-medium"><Loader2 className="animate-spin" />{busy}</span></div>}
             </div>
             <aside className="space-y-2.5">
@@ -206,8 +250,21 @@ export function Create() {
               >
                 {downloadingPdf ? <Loader2 className="animate-spin size-4" /> : <Download className="size-4" />} Download as PDF
               </Button>
-              <Button variant="outline" className="h-11 w-full justify-start rounded-2xl bg-card" onClick={saveToAccount} disabled={saving} data-testid="create-save-btn">
-                {saving ? <Loader2 className="animate-spin" /> : <Save />} {user ? "Save to my account" : "Log in to save"}
+              <Button
+                variant="outline"
+                className="h-11 w-full justify-start rounded-2xl bg-card"
+                onClick={saveToAccount}
+                disabled={saving}
+                data-testid="create-save-btn"
+              >
+                {saving ? <Loader2 className="animate-spin" /> : <Save />} {savedDocId ? "Save updates to account" : "Save to my account"}
+              </Button>
+              <Button
+                variant="outline"
+                className="h-11 w-full justify-start rounded-2xl bg-card"
+                onClick={() => navigate("/account")}
+              >
+                <FileText className="size-4 text-primary" /> View all saved documents
               </Button>
               <Button variant="outline" className="h-11 w-full justify-start rounded-2xl bg-card" onClick={() => { navigator.clipboard.writeText(text); toast.success("Copied"); }}><Copy /> Copy text</Button>
               <Button variant="outline" className="h-11 w-full justify-start rounded-2xl bg-card" onClick={() => { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank"); }}>
@@ -226,7 +283,7 @@ export function Create() {
                   ))}
                 </div>
               </div>
-              <Button variant="ghost" className="w-full rounded-2xl" onClick={() => { setDoc(null); setStep(0); setHistory([]); }}><RotateCcw /> Change my answers</Button>
+              <Button variant="ghost" className="w-full rounded-2xl" onClick={() => { setDoc(null); setStep(0); setHistory([]); setSavedDocId(null); }}><RotateCcw /> Change my answers</Button>
               <Button variant="ghost" className="w-full rounded-2xl" onClick={() => navigate("/")}>Create another document</Button>
             </aside>
           </div>

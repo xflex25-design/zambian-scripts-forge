@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import {
   FileText,
   Loader2,
@@ -15,20 +15,29 @@ import {
   Clock,
   Eye,
   CheckCircle2,
+  Printer,
+  Cloud,
+  HardDrive,
+  FileCheck,
+  ExternalLink,
+  ChevronRight,
+  Share2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/Button";
 import { useAuth } from "@/lib/auth";
 import { listDocuments, deleteDocument, updateDocument, type SavedDoc } from "@/lib/saved";
+import { isSupabaseConfigured } from "@/lib/supabase";
 import { navigate } from "@/lib/router";
 import { downloadDocAsTextPdf } from "@/lib/pdf";
 
 export function Account() {
-  const { user, loading } = useAuth();
+  const { user, loading, isLocalMode } = useAuth();
   const [docs, setDocs] = useState<SavedDoc[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Modal / View & Edit states
   const [activeDoc, setActiveDoc] = useState<SavedDoc | null>(null);
@@ -41,18 +50,26 @@ export function Account() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "az">("newest");
 
+  const printAreaRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    if (!loading && !user) navigate("/login");
+    if (!loading && !user) {
+      toast.info("Please sign in to view your saved documents.");
+      navigate("/login?redirect=/account");
+    }
   }, [loading, user]);
 
   const fetchDocs = async (isManualRefresh = false) => {
     if (isManualRefresh) setRefreshing(true);
+    setLoadError(null);
     try {
       const data = await listDocuments();
       setDocs(data);
-      if (isManualRefresh) toast.success("Documents refreshed.");
+      if (isManualRefresh) toast.success("Documents refreshed successfully.");
     } catch (e) {
-      toast.error((e as Error).message);
+      const msg = (e as Error).message;
+      setLoadError(msg);
+      toast.error(msg);
     } finally {
       setLoadingDocs(false);
       setRefreshing(false);
@@ -95,13 +112,7 @@ export function Account() {
 
     setSavingEdit(true);
     try {
-      await updateDocument(activeDoc.id, cleanTitle, cleanContent);
-      const updated: SavedDoc = {
-        ...activeDoc,
-        title: cleanTitle,
-        content: cleanContent,
-      };
-
+      const updated = await updateDocument(activeDoc.id, cleanTitle, cleanContent);
       setDocs((prev) => prev.map((d) => (d.id === activeDoc.id ? updated : d)));
       setActiveDoc(updated);
       setIsEditing(false);
@@ -145,6 +156,10 @@ export function Account() {
     toast.success("Text file downloaded.");
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   const filteredDocs = useMemo(() => {
     let result = [...docs];
     if (searchQuery.trim()) {
@@ -179,11 +194,20 @@ export function Account() {
         <div className="rounded-3xl border bg-card p-6 shadow-soft md:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <h1 className="font-display text-2xl font-bold sm:text-3xl">Saved Documents</h1>
                 <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
                   {docs.length} {docs.length === 1 ? "document" : "documents"}
                 </span>
+                {isSupabaseConfigured ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                    <Cloud className="size-3" /> Supabase Cloud Sync
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                    <HardDrive className="size-3" /> In-App Offline Storage
+                  </span>
+                )}
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
                 Signed in as <span className="font-semibold text-foreground">{user.email}</span>
@@ -218,7 +242,7 @@ export function Account() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by title or keyword…"
+                  placeholder="Search by title or text content…"
                   className="h-10 w-full rounded-2xl border bg-background pl-10 pr-4 text-xs outline-none focus:border-primary transition"
                 />
               </div>
@@ -239,11 +263,24 @@ export function Account() {
           )}
         </div>
 
+        {/* Supabase Error Alert if table is missing */}
+        {loadError && loadError.toLowerCase().includes("does not exist") && (
+          <div className="mt-6 rounded-3xl border border-amber-500/30 bg-amber-500/10 p-5 text-sm">
+            <h3 className="font-semibold text-amber-800 dark:text-amber-200">
+              Supabase table setup required
+            </h3>
+            <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+              Your Supabase project is connected, but the <code className="rounded bg-background px-1 py-0.5">saved_documents</code> table hasn't been created yet.
+              Run the SQL script found in <code className="rounded bg-background px-1 py-0.5">SUPABASE_SETUP.sql</code> in your Supabase SQL editor.
+            </p>
+          </div>
+        )}
+
         {/* Content Area */}
         {loadingDocs ? (
           <div className="mt-16 grid place-items-center">
             <Loader2 className="size-7 animate-spin text-primary" />
-            <p className="mt-2 text-xs text-muted-foreground">Loading your saved documents…</p>
+            <p className="mt-2 text-xs text-muted-foreground">Fetching your documents from database…</p>
           </div>
         ) : docs.length === 0 ? (
           <div className="mt-10 rounded-3xl border bg-card p-10 text-center shadow-soft sm:p-14">
@@ -252,7 +289,7 @@ export function Account() {
             </span>
             <h2 className="mt-4 font-display text-2xl font-bold">No saved documents yet</h2>
             <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-              Create a formal letter, job application, CV, or HELSB appeal and click "Save to my account" to access it here anytime.
+              Create a formal letter, job application, CV, or HELSB appeal. Your documents are saved to your account automatically.
             </p>
             <Button
               className="mt-6 rounded-2xl bg-gradient-primary px-6"
@@ -311,10 +348,16 @@ export function Account() {
                       </div>
                     </div>
 
-                    <h3 className="mt-3 line-clamp-2 font-display text-base font-bold text-foreground">
+                    <h3
+                      onClick={() => openView(d)}
+                      className="mt-3 line-clamp-2 font-display text-base font-bold text-foreground cursor-pointer hover:text-primary transition"
+                    >
                       {d.title}
                     </h3>
-                    <p className="mt-2 line-clamp-3 font-doc text-xs leading-relaxed text-muted-foreground">
+                    <p
+                      onClick={() => openView(d)}
+                      className="mt-2 line-clamp-3 font-doc text-xs leading-relaxed text-muted-foreground cursor-pointer hover:text-foreground transition"
+                    >
                       {d.content}
                     </p>
                   </div>
@@ -360,13 +403,13 @@ export function Account() {
       {/* Document View & Edit Modal */}
       {activeDoc && (
         <div
-          className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4 backdrop-blur-xs overflow-y-auto"
+          className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-xs overflow-y-auto"
           onClick={() => {
             if (!savingEdit) setActiveDoc(null);
           }}
         >
           <div
-            className="w-full max-w-3xl my-6 rounded-3xl border bg-card p-6 shadow-paper flex flex-col max-h-[90vh]"
+            className="w-full max-w-3xl my-6 rounded-3xl border bg-card p-6 shadow-paper flex flex-col max-h-[92vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -390,7 +433,7 @@ export function Account() {
                     <h2 className="font-display text-xl font-bold sm:text-2xl">
                       {activeDoc.title}
                     </h2>
-                    <p className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                    <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                       <span>
                         Created:{" "}
                         {new Date(activeDoc.created_at).toLocaleDateString("en-GB", {
@@ -403,6 +446,8 @@ export function Account() {
                       <span>
                         {activeDoc.content.trim().split(/\s+/).filter(Boolean).length} words
                       </span>
+                      <span>•</span>
+                      <span>{activeDoc.content.length} characters</span>
                     </p>
                   </div>
                 )}
@@ -434,8 +479,8 @@ export function Account() {
               {isEditing ? (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="font-semibold">Edit Content (Plain Text with Zambian Format)</span>
-                    <span>Separate paragraphs with empty lines</span>
+                    <span className="font-semibold">Edit Content (Zambian Formal Layout)</span>
+                    <span>Separate paragraphs with blank lines</span>
                   </div>
                   <textarea
                     rows={18}
@@ -443,9 +488,16 @@ export function Account() {
                     onChange={(e) => setEditContent(e.target.value)}
                     className="w-full rounded-2xl border bg-background p-4 font-doc text-sm leading-relaxed outline-none focus:border-primary transition"
                   />
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1">
+                    <span>{editContent.trim().split(/\s+/).filter(Boolean).length} words</span>
+                    <span>{editContent.length} characters</span>
+                  </div>
                 </div>
               ) : (
-                <div className="rounded-2xl border bg-background p-5 font-doc text-sm leading-relaxed whitespace-pre-wrap select-text">
+                <div
+                  ref={printAreaRef}
+                  className="print-area rounded-2xl border bg-background p-6 font-doc text-sm leading-relaxed whitespace-pre-wrap select-text shadow-inner"
+                >
                   {activeDoc.content}
                 </div>
               )}
@@ -475,7 +527,7 @@ export function Account() {
                     onClick={handleSaveEdit}
                   >
                     {savingEdit ? <Loader2 className="animate-spin size-4" /> : <Save className="size-4" />}
-                    Save changes
+                    Save changes to Supabase
                   </Button>
                 </>
               ) : (
@@ -495,10 +547,10 @@ export function Account() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="rounded-xl gap-1.5 text-xs font-semibold"
+                      className="rounded-xl gap-1.5 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/5"
                       onClick={() => handleDownloadPdf(activeDoc.content, activeDoc.title)}
                     >
-                      <Download className="size-3.5 text-primary" /> Download as PDF
+                      <Download className="size-3.5 text-primary" /> Download PDF
                     </Button>
                     <Button
                       variant="outline"
@@ -507,6 +559,14 @@ export function Account() {
                       onClick={() => handleDownloadTxt(activeDoc.content, activeDoc.title)}
                     >
                       Download .txt
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl gap-1.5 text-xs"
+                      onClick={handlePrint}
+                    >
+                      <Printer className="size-3.5" /> Print
                     </Button>
                     <Button
                       variant="outline"
