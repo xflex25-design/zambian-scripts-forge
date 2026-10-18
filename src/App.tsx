@@ -100,7 +100,7 @@ function App() {
     page = <ImageToText />;
   } else if (matchRoute("/landing/$slug", route.path)) {
     page = <Landing />;
-  } else if (route.path === "/login") {
+  } else if (route.path === "/login" || route.path === "/signup" || route.path === "/forgot-password") {
     page = <Login />;
   } else if (route.path === "/reset-password") {
     page = <ResetPassword />;

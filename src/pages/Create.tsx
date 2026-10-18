@@ -111,8 +111,19 @@ export function Create() {
     const text = docToText(doc);
     const saveToAccount = async () => {
       if (!user) {
+        try {
+          localStorage.setItem(
+            "zalemba_pending_doc",
+            JSON.stringify({
+              title: doc.subject || t.title,
+              content: text,
+            })
+          );
+        } catch {
+          // ignore
+        }
         toast.info("Log in to save this document to your account.");
-        navigate("/login");
+        navigate(`/login?redirect=${encodeURIComponent(`/create/${type}`)}`);
         return;
       }
       setSaving(true);

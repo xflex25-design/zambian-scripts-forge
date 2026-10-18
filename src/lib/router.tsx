@@ -6,11 +6,69 @@ export type RouteInfo = {
   search: URLSearchParams;
 };
 
-function parseHash(): RouteInfo {
-  const hash = window.location.hash.slice(1) || "/";
-  const [pathPart, queryPart] = hash.split("?");
+export function parseHash(): RouteInfo {
+  const rawHash = window.location.hash.startsWith("#")
+    ? window.location.hash.slice(1)
+    : window.location.hash;
+
+  // Combine query parameters from window.location.search
+  const search = new URLSearchParams(window.location.search);
+
+  // Check if hash contains Supabase auth fragment parameters (e.g. access_token=... or error=...)
+  if (
+    rawHash.includes("access_token=") ||
+    rawHash.includes("type=recovery") ||
+    rawHash.includes("type=signup") ||
+    rawHash.includes("error=") ||
+    rawHash.includes("error_description=")
+  ) {
+    const fragmentParams = new URLSearchParams(rawHash);
+    fragmentParams.forEach((val, key) => search.set(key, val));
+
+    const errorDesc = fragmentParams.get("error_description") || fragmentParams.get("error");
+    const isRecovery =
+      fragmentParams.get("type") === "recovery" ||
+      window.location.search.includes("recovery") ||
+      window.location.search.includes("flow=recovery");
+
+    if (errorDesc) {
+      return {
+        path: "/login",
+        params: {},
+        search,
+      };
+    }
+
+    if (isRecovery) {
+      return {
+        path: "/reset-password",
+        params: {},
+        search,
+      };
+    }
+
+    return {
+      path: "/account",
+      params: {},
+      search,
+    };
+  }
+
+  // Handle standard hash route like "#/login?redirect=..." or "#create/letter"
+  const normalized = rawHash.startsWith("/") ? rawHash : "/" + rawHash;
+  const [pathPart, queryPart] = normalized.split("?");
   const path = pathPart || "/";
-  const search = new URLSearchParams(queryPart || "");
+
+  if (queryPart) {
+    const hashParams = new URLSearchParams(queryPart);
+    hashParams.forEach((val, key) => search.set(key, val));
+  }
+
+  // Also check if flow=recovery was in the search params
+  if (search.get("flow") === "recovery" && path === "/") {
+    return { path: "/reset-password", params: {}, search };
+  }
+
   return { path, params: {}, search };
 }
 
@@ -18,7 +76,8 @@ let currentRoute: RouteInfo = parseHash();
 const listeners = new Set<() => void>();
 
 export function navigate(to: string) {
-  window.location.hash = to;
+  const cleanTo = to.startsWith("#") ? to.slice(1) : to;
+  window.location.hash = cleanTo.startsWith("/") ? cleanTo : "/" + cleanTo;
 }
 
 export function useRoute(): RouteInfo {
@@ -26,7 +85,9 @@ export function useRoute(): RouteInfo {
   useEffect(() => {
     const cb = () => force((n) => n + 1);
     listeners.add(cb);
-    return () => { listeners.delete(cb); };
+    return () => {
+      listeners.delete(cb);
+    };
   }, []);
   return currentRoute;
 }

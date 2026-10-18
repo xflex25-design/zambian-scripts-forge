@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 export type SavedDoc = {
   id: string;
@@ -9,6 +9,7 @@ export type SavedDoc = {
 };
 
 export async function listDocuments(): Promise<SavedDoc[]> {
+  if (!isSupabaseConfigured) return [];
   const { data, error } = await supabase
     .from("saved_documents")
     .select("id,user_id,title,content,created_at")
@@ -18,6 +19,9 @@ export async function listDocuments(): Promise<SavedDoc[]> {
 }
 
 export async function saveDocument(title: string, content: string): Promise<void> {
+  if (!isSupabaseConfigured) {
+    throw new Error("Supabase is not configured yet. Connect your Supabase project in settings.");
+  }
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Please sign in to save.");
   const { error } = await supabase
@@ -27,14 +31,20 @@ export async function saveDocument(title: string, content: string): Promise<void
 }
 
 export async function deleteDocument(id: string): Promise<void> {
+  if (!isSupabaseConfigured) return;
   const { error } = await supabase.from("saved_documents").delete().eq("id", id);
   if (error) throw new Error(error.message);
 }
 
 export async function countDocuments(): Promise<number> {
-  const { count, error } = await supabase
-    .from("saved_documents")
-    .select("*", { count: "exact", head: true });
-  if (error) throw new Error(error.message);
-  return count ?? 0;
+  if (!isSupabaseConfigured) return 0;
+  try {
+    const { count, error } = await supabase
+      .from("saved_documents")
+      .select("*", { count: "exact", head: true });
+    if (error) return 0;
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
 }
