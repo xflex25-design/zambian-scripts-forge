@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, CheckCircle2, Eye, EyeOff, KeyRound, Loader2, Lock, Mail, ShieldAlert } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/Button";
 import { useAuth } from "@/lib/auth";
 import { navigate, useRoute } from "@/lib/router";
 import { saveDocument } from "@/lib/saved";
-import { getSupabaseConfig, saveSupabaseConfig } from "@/lib/supabase";
 
 type Mode = "signin" | "signup" | "forgot";
 
 export function Login() {
   const route = useRoute();
-  const { signIn, signUp, resetPassword, signOut, user, isConfigured } = useAuth();
+  const { signIn, signUp, resetPassword, signOut, user } = useAuth();
 
   const initialMode: Mode =
     route.path === "/signup"
@@ -26,11 +25,6 @@ export function Login() {
   const [busy, setBusy] = useState(false);
   const [confirmedEmailSent, setConfirmedEmailSent] = useState<string | null>(null);
   const [resetEmailSent, setResetEmailSent] = useState<string | null>(null);
-
-  // In-app Supabase configuration modal/state for setups without .env
-  const [showConfig, setShowConfig] = useState(false);
-  const [customUrl, setCustomUrl] = useState(() => getSupabaseConfig().url);
-  const [customKey, setCustomKey] = useState(() => getSupabaseConfig().key);
 
   const redirectUrl = route.search.get("redirect") || "/account";
 
@@ -100,16 +94,6 @@ export function Login() {
     }
   };
 
-  const handleSaveConfig = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customUrl.trim() || !customKey.trim()) {
-      toast.error("Please enter both Supabase URL and Publishable Key.");
-      return;
-    }
-    saveSupabaseConfig(customUrl.trim(), customKey.trim());
-    toast.success("Supabase credentials saved. Reloading...");
-  };
-
   const titles: Record<Mode, string> = {
     signin: "Log in to Zalemba",
     signup: "Create your Zalemba account",
@@ -163,58 +147,6 @@ export function Login() {
             </div>
           ) : (
             <>
-              {/* Missing Supabase configuration notification */}
-              {!isConfigured && (
-                <div className="mb-6 rounded-2xl border border-primary/20 bg-secondary/50 p-3.5 text-xs">
-                  <div className="flex items-start gap-2.5">
-                    <KeyRound className="size-4 shrink-0 text-primary mt-0.5" />
-                    <div>
-                      <p className="font-semibold text-foreground">Account ready to use</p>
-                      <p className="mt-0.5 text-muted-foreground">
-                        You can create an account and save documents right away.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => setShowConfig(!showConfig)}
-                        className="mt-1.5 inline-flex items-center gap-1 font-semibold text-primary hover:underline"
-                      >
-                        {showConfig ? "Hide Supabase setup" : "Connect Supabase for Cloud Sync (Optional)"}
-                      </button>
-                    </div>
-                  </div>
-
-                  {showConfig && (
-                    <form onSubmit={handleSaveConfig} className="mt-3.5 space-y-2.5 border-t border-amber-500/20 pt-3">
-                      <div>
-                        <label className="block text-[11px] font-semibold text-foreground">Project URL</label>
-                        <input
-                          type="url"
-                          required
-                          value={customUrl}
-                          onChange={(e) => setCustomUrl(e.target.value)}
-                          placeholder="https://xyzcompany.supabase.co"
-                          className="mt-1 h-9 w-full rounded-xl border bg-background px-3 text-xs outline-none focus:border-primary"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-semibold text-foreground">Anon / Publishable Key</label>
-                        <input
-                          type="text"
-                          required
-                          value={customKey}
-                          onChange={(e) => setCustomKey(e.target.value)}
-                          placeholder="eyJhbGciOiJIUzI1NiIsIn..."
-                          className="mt-1 h-9 w-full rounded-xl border bg-background px-3 text-xs outline-none focus:border-primary"
-                        />
-                      </div>
-                      <Button type="submit" size="sm" className="w-full rounded-xl bg-primary">
-                        Save and Connect
-                      </Button>
-                    </form>
-                  )}
-                </div>
-              )}
-
               {/* Email Sent Confirmation Banners */}
               {confirmedEmailSent && (
                 <div className="mb-6 rounded-2xl border border-primary/30 bg-primary/10 p-4 text-sm text-foreground">

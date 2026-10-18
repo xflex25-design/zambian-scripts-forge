@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, getSupabaseConfig } from "@/lib/supabase";
 import { navigate } from "@/lib/router";
 
 type AuthValue = {
@@ -89,6 +89,13 @@ function createLocalSession(user: { id: string; email: string }): Session {
 
 export function formatAuthError(msg: string): string {
   const lower = msg.toLowerCase();
+  if (
+    lower.includes("forbidden use of secret api key in browser") ||
+    lower.includes("secret api key") ||
+    lower.includes("service_role")
+  ) {
+    return "Forbidden use of secret API key in browser: You are using a Supabase 'service_role' (secret) key. Web browsers only permit the 'anon' (public) key for security reasons. Please update your key in the Supabase settings below or use local offline mode.";
+  }
   if (lower.includes("invalid login credentials")) {
     return "Incorrect email or password. Please verify your details.";
   }

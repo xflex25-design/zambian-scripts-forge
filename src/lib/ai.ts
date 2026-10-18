@@ -7,7 +7,10 @@ const DEFAULT_MODELS = [
 ];
 
 function getModels(): string[] {
-  const custom = import.meta.env["VITE_OPENROUTER_MODELS"]?.split(",").map((m: string) => m.trim()).filter(Boolean);
+  const custom = import.meta.env["VITE_OPENROUTER_MODELS"]
+    ?.split(",")
+    .map((m: string) => m.trim())
+    .filter((m: string) => Boolean(m) && !m.startsWith("sk-or-") && m.includes("/"));
   return custom && custom.length ? custom : DEFAULT_MODELS;
 }
 
@@ -26,7 +29,7 @@ export async function writeText(system: string, prompt: string): Promise<string>
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
-        "HTTP-Referer": window.location.origin,
+        "HTTP-Referer": typeof window !== "undefined" ? window.location.origin : "https://zalemba.app",
         "X-Title": "Zalemba",
       },
       body: JSON.stringify({
@@ -55,7 +58,7 @@ export async function writeText(system: string, prompt: string): Promise<string>
     if (response.status === 401) throw new Error("OpenRouter rejected the API key. Check VITE_OPENROUTER_API_KEY.");
     if (response.status === 402) throw new Error("Your OpenRouter account is out of credits. Add credits on openrouter.ai.");
     if (response.status === 429) throw new Error("The writer is busy right now. Please try again in a minute.");
-    throw new Error(`Couldn't write your document (HTTP ${response.status}). Please try again.`);
+    throw new Error(providerMessage || `Couldn't write your document (HTTP ${response.status}). Please try again.`);
   }
 
   const result = (await response.json()) as {

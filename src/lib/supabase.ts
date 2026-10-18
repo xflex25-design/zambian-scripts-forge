@@ -1,7 +1,14 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const STORAGE_URL_KEY = "zalemba_supabase_url";
-const STORAGE_KEY_KEY = "zalemba_supabase_key";
+// Clean up any stale credentials stored in browser localStorage
+if (typeof window !== "undefined") {
+  try {
+    localStorage.removeItem("zalemba_supabase_url");
+    localStorage.removeItem("zalemba_supabase_key");
+  } catch {
+    // Ignore storage restrictions
+  }
+}
 
 function getCleanString(val: unknown): string {
   if (typeof val === "string" && val.trim().length > 0) {
@@ -10,60 +17,93 @@ function getCleanString(val: unknown): string {
   return "";
 }
 
-export function getSupabaseConfig(): { url: string; key: string; isConfigured: boolean } {
-  let url = getCleanString(import.meta.env.VITE_SUPABASE_URL);
-  let key = getCleanString(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
-
-  if ((!url || !key) && typeof window !== "undefined") {
+/**
+ * Checks whether an API key is a secret / service_role key.
+ */
+export function isSecretApiKey(key: string): boolean {
+  if (!key) return false;
+  const clean = key.trim();
+  if (
+    clean.startsWith("sb_secret_") ||
+    clean.startsWith("sb_sec_") ||
+    clean.toLowerCase().includes("service_role")
+  ) {
+    return true;
+  }
+  const parts = clean.split(".");
+  if (parts.length === 3) {
     try {
-      const storedUrl = getCleanString(localStorage.getItem(STORAGE_URL_KEY));
-      const storedKey = getCleanString(localStorage.getItem(STORAGE_KEY_KEY));
-      if (storedUrl && storedKey) {
-        url = storedUrl;
-        key = storedKey;
+      const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+      const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+      const json = JSON.parse(atob(padded));
+      if (
+        json?.role === "service_role" ||
+        json?.role === "supabase_admin" ||
+        json?.role === "secret"
+      ) {
+        return true;
       }
     } catch {
-      // Ignore localStorage access restrictions
+      // Ignore decoding failure
     }
   }
+  return false;
+}
+
+export function getSupabaseConfig(): { url: string; key: string; isConfigured: boolean } {
+  // Read strictly from environment variables
+  let url = getCleanString(import.meta.env.VITE_SUPABASE_URL);
+  let key = getCleanString(
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
+  );
+
+  // Normalize URL by removing trailing slashes or /rest/v1
+  if (url) {
+    url = url.replace(/\/rest\/v1\/?$/, "").replace(/\/+$/, "");
+  }
+
+  const isSecret = isSecretApiKey(key);
+  const isPlaceholder =
+    !url ||
+    !key ||
+    url.includes("placeholder-project") ||
+    key === "placeholder-anon-key";
 
   const isConfigured = Boolean(
     url &&
     key &&
-    !url.includes("placeholder-project") &&
-    url.startsWith("http")
+    !isPlaceholder &&
+    url.startsWith("http") &&
+    !isSecret
   );
 
   return { url, key, isConfigured };
 }
 
-export function saveSupabaseConfig(url: string, key: string): void {
-  if (typeof window !== "undefined") {
-    localStorage.setItem(STORAGE_URL_KEY, url.trim());
-    localStorage.setItem(STORAGE_KEY_KEY, key.trim());
-    window.location.reload();
-  }
-}
-
-export function clearSupabaseConfig(): void {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem(STORAGE_URL_KEY);
-    localStorage.removeItem(STORAGE_KEY_KEY);
-    window.location.reload();
-  }
-}
-
 const config = getSupabaseConfig();
 export const isSupabaseConfigured = config.isConfigured;
 
-// Provide a valid dummy endpoint if credentials aren't provided yet so the app loads smoothly
-const clientUrl = config.url || "https://placeholder-project.supabase.co";
-const clientKey = config.key || "placeholder-anon-key";
+// Provide a valid dummy endpoint if Supabase is not configured via env
+const clientUrl = config.isConfigured ? config.url : "https://placeholder-project.supabase.co";
+const clientKey = config.isConfigured ? config.key : "placeholder-anon-key";
 
-export const supabase: SupabaseClient = createClient(clientUrl, clientKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-  },
-});
+let clientInstance: SupabaseClient;
+try {
+  clientInstance = createClient(clientUrl, clientKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  });
+} catch (e) {
+  console.warn("[Zalemba] Supabase client initialization fallback:", e);
+  clientInstance = createClient(
+    "https://placeholder-project.supabase.co",
+    "placeholder-anon-key"
+  );
+}
+
+export const supabase: SupabaseClient = clientInstance;
+
+
