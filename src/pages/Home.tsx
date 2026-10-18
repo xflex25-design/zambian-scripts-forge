@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Header } from "@/components/Header";
 import { DocIcon } from "@/components/DocIcon";
 import { Button } from "@/components/Button";
+import { TemplateBrowser } from "@/components/TemplateBrowser";
 import { DOC_TYPES, FINDER } from "@/lib/documents";
 import { recommendDocument } from "@/lib/docs";
 import { useSpeech } from "@/hooks/use-speech";
@@ -99,6 +100,7 @@ export function Home() {
           </div>
         </section>
 
+        {/* Most Used Quick Actions */}
         <section className="mt-16">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">Most used</p>
           <h2 className="mt-1 font-display text-2xl font-bold sm:text-3xl">Popular in Zambia</h2>
@@ -133,7 +135,11 @@ export function Home() {
           </div>
         </section>
 
-        <section className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Template Browser with Interactive Thumbnails and Samples */}
+        <TemplateBrowser onSelectTemplate={(typeId) => startCreate(`/create/${typeId}`)} />
+
+        {/* Quick Guide Links */}
+        <section className="mt-16 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <a href="#/landing/helsb" className="rounded-2xl border bg-card p-4 text-sm shadow-soft transition hover:border-primary/40 hover:shadow-paper">
             <p className="font-semibold text-primary">HELSB Appeal Letter</p>
             <p className="mt-1 text-xs text-muted-foreground">Sample & format for student loan applications</p>
