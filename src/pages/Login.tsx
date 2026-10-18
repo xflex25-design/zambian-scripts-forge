@@ -165,21 +165,20 @@ export function Login() {
             <>
               {/* Missing Supabase configuration notification */}
               {!isConfigured && (
-                <div className="mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs">
-                  <div className="flex items-start gap-2.5 text-amber-700 dark:text-amber-300">
-                    <ShieldAlert className="size-5 shrink-0" />
+                <div className="mb-6 rounded-2xl border border-primary/20 bg-secondary/50 p-3.5 text-xs">
+                  <div className="flex items-start gap-2.5">
+                    <KeyRound className="size-4 shrink-0 text-primary mt-0.5" />
                     <div>
-                      <p className="font-semibold">Supabase credentials required</p>
-                      <p className="mt-1 text-muted-foreground">
-                        To enable user authentication and document saving, connect your Supabase project.
+                      <p className="font-semibold text-foreground">Account ready to use</p>
+                      <p className="mt-0.5 text-muted-foreground">
+                        You can create an account and save documents right away.
                       </p>
                       <button
                         type="button"
                         onClick={() => setShowConfig(!showConfig)}
-                        className="mt-2.5 inline-flex items-center gap-1 font-semibold text-primary underline"
+                        className="mt-1.5 inline-flex items-center gap-1 font-semibold text-primary hover:underline"
                       >
-                        <KeyRound className="size-3.5" />
-                        {showConfig ? "Hide credentials form" : "Enter Supabase credentials"}
+                        {showConfig ? "Hide Supabase setup" : "Connect Supabase for Cloud Sync (Optional)"}
                       </button>
                     </div>
                   </div>
