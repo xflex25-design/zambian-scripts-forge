@@ -10,49 +10,43 @@ import { ResetPassword } from "@/pages/ResetPassword";
 import { Account } from "@/pages/Account";
 import { getDocType } from "@/lib/documents";
 
-function getSiteUrl(): string {
-  if (typeof window !== "undefined" && window.location.origin) {
-    return window.location.origin;
-  }
-  return "https://zalemba.vercel.app";
-}
+const SITE_URL = "https://zalemba.lovable.app";
 
 type MetaInfo = { title: string; description: string; canonical: string };
 
 function getMeta(path: string): MetaInfo {
-  const siteUrl = getSiteUrl();
-  if (path === "/" || path === "") {
+  if (path === "/") {
     return {
-      title: "Zalemba – Free CV Maker & Application Letter Generator in Zambia",
-      description: "Create professional Zambian CVs, job application letters, and HELSB appeal letters online with Zalemba. Free, fast, and formatted for Zambian employers and institutions.",
-      canonical: `${siteUrl}/`,
+      title: "Zalemba – AI Letter and Document Generator in Zambia",
+      description: "Create professional letters, CVs, student appeals and formal documents with Zalemba. Answer a few simple questions and generate your document online.",
+      canonical: `${SITE_URL}/`,
     };
   }
   const createMatch = matchRoute("/create/$type", path);
   if (createMatch) {
     const t = getDocType(createMatch.type);
     if (t) {
-      return { title: t.seo.title, description: t.seo.description, canonical: `${siteUrl}/create/${t.id}` };
+      return { title: t.seo.title, description: t.seo.description, canonical: `${SITE_URL}/create/${t.id}` };
     }
   }
   const landingMatch = matchRoute("/landing/$slug", path);
   if (landingMatch) {
     const l = LANDINGS[landingMatch.slug];
     if (l) {
-      return { title: l.metaTitle, description: l.metaDescription, canonical: `${siteUrl}/landing/${l.slug}` };
+      return { title: l.metaTitle, description: l.metaDescription, canonical: `${SITE_URL}/landing/${l.slug}` };
     }
   }
   if (path === "/image-to-text") {
     return {
-      title: "Image to Text Converter Online — Free OCR Scanner in Zambia | Zalemba",
-      description: "Extract text from photos, documents, and screenshots instantly in Zambia. Free online OCR converter — copy, edit, or transform printed letters into editable text.",
-      canonical: `${siteUrl}/image-to-text`,
+      title: "Image to Text Converter — Free OCR Online | Zalemba",
+      description: "Upload an image or screenshot and extract its text instantly. Free image to text converter with OCR — edit, copy, download, or use the text to create a document.",
+      canonical: `${SITE_URL}/image-to-text`,
     };
   }
   return {
-    title: "Zalemba – Free CV Maker & Application Letter Generator in Zambia",
-    description: "Create professional Zambian CVs, job application letters, and HELSB appeal letters online with Zalemba.",
-    canonical: siteUrl,
+    title: "Zalemba – AI Letter and Document Generator in Zambia",
+    description: "Create professional letters, CVs, student appeals and formal documents with Zalemba.",
+    canonical: SITE_URL,
   };
 }
 
@@ -64,9 +58,10 @@ function setMeta(path: string) {
     let el = document.head.querySelector(selector) as HTMLMetaElement | null;
     if (!el) {
       el = document.createElement("meta");
-      if (selector.startsWith('meta[name="')) {
+      const [, name] = selector.match(/\[(.+?)="(.+?)"\]/)?.slice(1) ?? [null, null];
+      if (selector.startsWith("meta[name")) {
         el.setAttribute("name", selector.match(/name="(.+?)"/)?.[1] ?? "");
-      } else if (selector.startsWith('meta[property="')) {
+      } else if (selector.startsWith("meta[property")) {
         el.setAttribute("property", selector.match(/property="(.+?)"/)?.[1] ?? "");
       }
       document.head.appendChild(el);
@@ -79,10 +74,6 @@ function setMeta(path: string) {
   setOrCreate('meta[property="og:description"]', "content", meta.description);
   setOrCreate('meta[property="og:url"]', "content", meta.canonical);
   setOrCreate('meta[property="og:type"]', "content", "website");
-  setOrCreate('meta[property="og:site_name"]', "content", "Zalemba");
-  setOrCreate('meta[name="twitter:card"]', "content", "summary_large_image");
-  setOrCreate('meta[name="twitter:title"]', "content", meta.title);
-  setOrCreate('meta[name="twitter:description"]', "content", meta.description);
 
   let canonical = document.head.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
   if (!canonical) {
