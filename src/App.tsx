@@ -14,7 +14,7 @@ function getSiteUrl(): string {
   if (typeof window !== "undefined" && window.location.origin) {
     return window.location.origin;
   }
-  return "https://zalemba.lovable.app";
+  return "https://zalemba.vercel.app";
 }
 
 type MetaInfo = { title: string; description: string; canonical: string };

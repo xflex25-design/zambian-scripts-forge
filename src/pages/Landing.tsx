@@ -357,7 +357,7 @@ export function Landing() {
       document.head.appendChild(script);
     }
 
-    const currentUrl = typeof window !== "undefined" ? window.location.href : `https://zalemba.lovable.app/landing/${content.slug}`;
+    const currentUrl = typeof window !== "undefined" ? window.location.href : `https://zalemba.vercel.app/landing/${content.slug}`;
 
     const schemaData: Record<string, any> = {
       "@context": "https://schema.org",
@@ -369,13 +369,13 @@ export function Landing() {
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": typeof window !== "undefined" ? window.location.origin : "https://zalemba.lovable.app",
+              "item": typeof window !== "undefined" ? window.location.origin : "https://zalemba.vercel.app",
             },
             {
               "@type": "ListItem",
               "position": 2,
               "name": "Guides",
-              "item": `${typeof window !== "undefined" ? window.location.origin : "https://zalemba.lovable.app"}/#guides`,
+              "item": `${typeof window !== "undefined" ? window.location.origin : "https://zalemba.vercel.app"}/#guides`,
             },
             {
               "@type": "ListItem",
@@ -394,7 +394,7 @@ export function Landing() {
           "publisher": {
             "@type": "Organization",
             "name": "Zalemba",
-            "url": typeof window !== "undefined" ? window.location.origin : "https://zalemba.lovable.app",
+            "url": typeof window !== "undefined" ? window.location.origin : "https://zalemba.vercel.app",
           },
         },
       ],

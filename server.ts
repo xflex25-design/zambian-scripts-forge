@@ -68,7 +68,7 @@ app.get("/favicon.ico", (_req, res) => {
 
 // Dynamic robots.txt
 app.get("/robots.txt", (req, res) => {
-  const host = req.get("host") || "zalemba.lovable.app";
+  const host = req.get("host") || "zalemba.vercel.app";
   const proto = req.protocol === "https" || req.get("x-forwarded-proto") === "https" ? "https" : "http";
   const content = `User-agent: *\nAllow: /\nDisallow: /account\nDisallow: /reset-password\nDisallow: /login\nDisallow: /signup\nDisallow: /forgot-password\n\nSitemap: ${proto}://${host}/sitemap.xml\n`;
   res.type("text/plain").send(content);
@@ -76,7 +76,7 @@ app.get("/robots.txt", (req, res) => {
 
 // Dynamic sitemap.xml with canonical search-indexable paths
 app.get("/sitemap.xml", (req, res) => {
-  const host = req.get("host") || "zalemba.lovable.app";
+  const host = req.get("host") || "zalemba.vercel.app";
   const proto = req.protocol === "https" || req.get("x-forwarded-proto") === "https" ? "https" : "http";
   const base = `${proto}://${host}`;
   const routes = [
