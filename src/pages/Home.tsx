@@ -94,7 +94,7 @@ export function Home() {
             </button>
           </div>
           <div className="relative hidden animate-rise [animation-delay:150ms] md:block">
-            <img src={hero} alt="A young Zambian woman creating a document on her phone" width={1024} height={1024} className="rounded-[2rem] shadow-paper" />
+            <img src={hero} alt="Zambian job applicant creating a professional CV and application letter online with Zalemba" width={1024} height={1024} className="rounded-[2rem] shadow-paper" />
             <div className="animate-float absolute -left-6 top-10 rounded-2xl bg-card px-4 py-2 text-sm font-medium shadow-soft">✓ Your document is ready</div>
             <div className="animate-float absolute -right-4 bottom-12 rounded-2xl bg-card px-4 py-2 text-sm font-medium shadow-soft [animation-delay:1.5s]">Personalised for you</div>
           </div>
@@ -139,23 +139,135 @@ export function Home() {
         <TemplateBrowser onSelectTemplate={(typeId) => startCreate(`/create/${typeId}`)} />
 
         {/* Quick Guide Links */}
-        <section className="mt-16 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <a href="#/landing/helsb" className="rounded-2xl border bg-card p-4 text-sm shadow-soft transition hover:border-primary/40 hover:shadow-paper">
-            <p className="font-semibold text-primary">HELSB Appeal Letter</p>
-            <p className="mt-1 text-xs text-muted-foreground">Sample & format for student loan applications</p>
-          </a>
-          <a href="#/landing/job-application" className="rounded-2xl border bg-card p-4 text-sm shadow-soft transition hover:border-primary/40 hover:shadow-paper">
-            <p className="font-semibold text-primary">Job Application Letter</p>
-            <p className="mt-1 text-xs text-muted-foreground">Zambia job application letter sample & format</p>
-          </a>
-          <a href="#/landing/cv" className="rounded-2xl border bg-card p-4 text-sm shadow-soft transition hover:border-primary/40 hover:shadow-paper">
-            <p className="font-semibold text-primary">CV Generator</p>
-            <p className="mt-1 text-xs text-muted-foreground">Create a professional Zambian CV online</p>
-          </a>
-          <a href="#/landing/image-to-text" className="rounded-2xl border bg-card p-4 text-sm shadow-soft transition hover:border-primary/40 hover:shadow-paper">
-            <p className="font-semibold text-primary">Image to Text Converter</p>
-            <p className="mt-1 text-xs text-muted-foreground">Extract text from photos and screenshots</p>
-          </a>
+        <section id="guides" className="mt-16">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">Zambian Document Guides</p>
+              <h2 className="mt-1 font-display text-2xl font-bold sm:text-3xl">Guides &amp; Formats for Zambia</h2>
+            </div>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <a href="#/landing/cv" className="rounded-2xl border bg-card p-4 text-sm shadow-soft transition hover:border-primary/40 hover:shadow-paper">
+              <p className="font-semibold text-primary">📄 CV Maker Zambia</p>
+              <p className="mt-1 text-xs text-muted-foreground">Standard Zambian CV format for school leavers, graduates, and professionals.</p>
+            </a>
+            <a href="#/landing/job-application" className="rounded-2xl border bg-card p-4 text-sm shadow-soft transition hover:border-primary/40 hover:shadow-paper">
+              <p className="font-semibold text-primary">💼 Job Application Letter</p>
+              <p className="mt-1 text-xs text-muted-foreground">Correct Zambian application letter structure, HR addressing, and free PDF generator.</p>
+            </a>
+            <a href="#/landing/helsb" className="rounded-2xl border bg-card p-4 text-sm shadow-soft transition hover:border-primary/40 hover:shadow-paper">
+              <p className="font-semibold text-primary">🎓 HELSB Appeal Letter</p>
+              <p className="mt-1 text-xs text-muted-foreground">How to write a student loan appeal letter to HELSB in Lusaka with grounds of vulnerability.</p>
+            </a>
+            <a href="#/landing/internship-application" className="rounded-2xl border bg-card p-4 text-sm shadow-soft transition hover:border-primary/40 hover:shadow-paper">
+              <p className="font-semibold text-primary">🎓 Internship &amp; Attachment Letter</p>
+              <p className="mt-1 text-xs text-muted-foreground">Industrial attachment application letter format for UNZA, CBU, and college students.</p>
+            </a>
+            <a href="#/landing/resignation-letter" className="rounded-2xl border bg-card p-4 text-sm shadow-soft transition hover:border-primary/40 hover:shadow-paper">
+              <p className="font-semibold text-primary">📝 Resignation Letter Zambia</p>
+              <p className="mt-1 text-xs text-muted-foreground">Standard notice period letter complying with the Zambian Employment Code Act.</p>
+            </a>
+            <a href="#/landing/image-to-text" className="rounded-2xl border bg-card p-4 text-sm shadow-soft transition hover:border-primary/40 hover:shadow-paper">
+              <p className="font-semibold text-primary">📷 Image to Text Converter</p>
+              <p className="mt-1 text-xs text-muted-foreground">Extract text from photos, WhatsApp screenshots, certificates, and newspaper adverts.</p>
+            </a>
+          </div>
+        </section>
+
+        {/* SEO Information & Feature Highlights */}
+        <section className="mt-16 rounded-3xl border bg-card/70 p-6 sm:p-10 shadow-soft">
+          <div className="max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">Zambian Document Standards</p>
+            <h2 className="mt-2 font-display text-2xl font-bold sm:text-3xl text-foreground">
+              Built for How Documents Are Done in Zambia
+            </h2>
+            <p className="mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed">
+              Zalemba is designed specifically for job seekers, students, and businesses in Zambia. Unlike generic international templates, our documents follow the formal conventions, salutations, NRC formatting, and address structures expected by Zambian employers and government institutions.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-2xl border bg-background/60 p-4">
+              <h3 className="font-semibold text-foreground text-sm">Zambian CV Format</h3>
+              <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
+                Includes your NRC number, date of birth, languages spoken, education, and traceable local referees.
+              </p>
+            </div>
+            <div className="rounded-2xl border bg-background/60 p-4">
+              <h3 className="font-semibold text-foreground text-sm">Formal Job Letters</h3>
+              <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
+                Formal HR addresses, advert references, respectful Zambian tone, and ready-to-print PDF download.
+              </p>
+            </div>
+            <div className="rounded-2xl border bg-background/60 p-4">
+              <h3 className="font-semibold text-foreground text-sm">HELSB Student Appeals</h3>
+              <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
+                Addressed directly to the CEO of HELSB in Lusaka with sincere articulation of financial vulnerability.
+              </p>
+            </div>
+            <div className="rounded-2xl border bg-background/60 p-4">
+              <h3 className="font-semibold text-foreground text-sm">Business in Kwacha (K)</h3>
+              <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
+                Generate clean quotations, invoices, and debt reminder letters in Zambian Kwacha (ZMW) instantly.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Homepage Zambian FAQs */}
+        <section className="mt-16 rounded-3xl border bg-card p-6 sm:p-10 shadow-soft">
+          <div className="max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">Answers &amp; Guidance</p>
+            <h2 className="mt-2 font-display text-2xl font-bold sm:text-3xl text-foreground">
+              Frequently Asked Questions About Documents in Zambia
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Clear answers to the most common questions Zambians ask about CVs, job letters, and loan appeals.
+            </p>
+          </div>
+
+          <div className="mt-8 divide-y">
+            <div className="py-4">
+              <h3 className="font-semibold text-foreground text-sm sm:text-base">
+                How do I write a CV in Zambia if I have no work experience?
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                If you are a Grade 12 school leaver or fresh graduate without formal job experience, structure your CV around your educational achievements, computer skills, languages, and practical strengths. Mention voluntary work, internships, church leadership, or assisting in a family shop. Zambian employers appreciate honesty and a strong work ethic.
+              </p>
+            </div>
+            <div className="py-4">
+              <h3 className="font-semibold text-foreground text-sm sm:text-base">
+                What is the correct format for an application letter in Zambia?
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                A formal Zambian job application letter includes your address, contact phone number, the date in standard British/Zambian format, the employer address (such as The Human Resources Manager), a formal salutation (&quot;Dear Sir/Madam,&quot;), a capitalized reference line (&quot;RE: APPLICATION FOR EMPLOYMENT AS...&quot;), and a polite sign-off (&quot;Yours faithfully,&quot; followed by your full name and cell number).
+              </p>
+            </div>
+            <div className="py-4">
+              <h3 className="font-semibold text-foreground text-sm sm:text-base">
+                How do I write a HELSB appeal letter for a student loan?
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                Address your letter to &quot;The Chief Executive Officer, Higher Education Loans and Scholarships Board, P.O. Box 320298, LUSAKA.&quot; State your NRC number, admitted university, programme of study, and the loan percentage you need (100%, 75%, or 50%). Clearly explain your family financial situation and attach certified copies of admission letters, ECZ results, NRCs, and deposit slips.
+              </p>
+            </div>
+            <div className="py-4">
+              <h3 className="font-semibold text-foreground text-sm sm:text-base">
+                Is Zalemba free to use in Zambia?
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                Yes. Creating, editing, and downloading documents on Zalemba is completely free. Simply create a free account so your documents are safely saved and accessible from any phone or computer.
+              </p>
+            </div>
+            <div className="py-4">
+              <h3 className="font-semibold text-foreground text-sm sm:text-base">
+                Can I download my finished document as a PDF?
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                Yes. Once you answer a few simple questions, Zalemba formats your document and allows you to download it directly as a clean, print-ready PDF or copy the text to your clipboard.
+              </p>
+            </div>
+          </div>
         </section>
 
         <p className="mt-16 text-center text-xs text-muted-foreground">

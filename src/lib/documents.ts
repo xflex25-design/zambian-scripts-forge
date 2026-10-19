@@ -87,8 +87,8 @@ export const DOC_TYPES: DocType[] = [
     kind: "letter",
     popular: true,
     seo: {
-      title: "Job Application Letter Sample & Format — Zambia | Zalemba",
-      description: "Write a professional job application letter in the correct Zambian format. Answer a few questions and get a ready-to-send letter — free, no login.",
+      title: "Job Application Letter in Zambia — Free Generator & Format | Zalemba",
+      description: "Generate a professional job application letter in the standard Zambian format. Answer simple questions and download a ready-to-send letter PDF free.",
     },
     subject: (a) => `RE: APPLICATION FOR EMPLOYMENT AS ${up(a.position) ? (/^[AEIOU]/.test(up(a.position)) ? "AN " : "A ") + up(a.position) : "..."}`,
     questions: [
@@ -118,8 +118,8 @@ export const DOC_TYPES: DocType[] = [
     kind: "freeform",
     popular: true,
     seo: {
-      title: "CV Maker & Generator in Zambia — Free CV Template | Zalemba",
-      description: "Create a professional CV in the standard Zambian format. Answer simple questions and download your CV in minutes — free, no login needed.",
+      title: "Free CV Maker Zambia — Professional Zambian CV Template | Zalemba",
+      description: "Create a professional CV in the standard Zambian format. Free CV maker for job seekers, school leavers, and graduates in Zambia with instant PDF download.",
     },
     subject: () => "CURRICULUM VITAE",
     questions: [
@@ -144,8 +144,8 @@ export const DOC_TYPES: DocType[] = [
     kind: "letter",
     popular: true,
     seo: {
-      title: "HELSB Application Letter Sample — Student Loan Letter Zambia | Zalemba",
-      description: "How to write a HELSB application letter for a student loan in Zambia. Answer a few questions and get a correctly formatted letter addressed to HELSB — free.",
+      title: "HELSB Appeal Letter Generator Zambia — Student Loan Appeal | Zalemba",
+      description: "How to write a HELSB student loan application or appeal letter in Zambia. Properly formatted with CEO address in Lusaka, loan percentage, and NRC.",
     },
     defaultTo: ["The Chief Executive Officer,", "Higher Education Loans and Scholarships Board,", "P.O. Box 320298,", "LUSAKA."],
     subject: (a) => `RE: APPLICATION FOR A ${up(a.percentage) || "100%"} STUDENT LOAN`,
@@ -173,8 +173,8 @@ export const DOC_TYPES: DocType[] = [
     kind: "letter",
     popular: true,
     seo: {
-      title: "School Application Letter Sample — Zambia | Zalemba",
-      description: "Write a formal letter to a school in Zambia — place applications, requests and more. Answer a few questions and get a ready-to-send letter.",
+      title: "School Application Letter Generator Zambia — Free Sample & Format | Zalemba",
+      description: "Write a formal letter to a Zambian school for Grade places, child transfers, or fee requests. Formatted for head teachers and school administrators.",
     },
     subject: (a) => `RE: ${up(a.purpose) || "REQUEST"}`,
     questions: [
@@ -197,8 +197,8 @@ export const DOC_TYPES: DocType[] = [
     kind: "freeform",
     popular: true,
     seo: {
-      title: "Quotation & Invoice Maker — Zambia | Zalemba",
-      description: "Create professional quotations, invoices and debt reminders in Kwacha for your Zambian business. Free, no login — just answer a few questions.",
+      title: "Quotation & Invoice Maker Zambia — Kwacha (ZMW) Templates | Zalemba",
+      description: "Generate professional business quotations, invoices, and debt reminders in Zambian Kwacha (K). Fast, free, and formatted for Zambian businesses.",
     },
     subject: (a) => up(a.docKind) || "QUOTATION",
     questions: [
@@ -220,8 +220,8 @@ export const DOC_TYPES: DocType[] = [
     kind: "letter",
     popular: true,
     seo: {
-      title: "Formal Letter Writer — Resignation, Complaint & Request Letters Zambia | Zalemba",
-      description: "Write any formal Zambian letter — resignation, complaint, leave application, request and more. Correct format, ready in minutes, free.",
+      title: "Formal Letter Writer Zambia — Resignation, Leave & Request Letters | Zalemba",
+      description: "Write formal Zambian letters — resignation letters, leave applications, permission requests, and official notices in the authentic Zambian format.",
     },
     subject: (a) => `RE: ${up(a.purpose) || "..."}`,
     questions: [

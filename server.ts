@@ -61,6 +61,56 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", service: "zalemba" });
 });
 
+// Explicitly handle favicon.ico to ensure no icon is served
+app.get("/favicon.ico", (_req, res) => {
+  res.status(204).end();
+});
+
+// Dynamic robots.txt
+app.get("/robots.txt", (req, res) => {
+  const host = req.get("host") || "zalemba.lovable.app";
+  const proto = req.protocol === "https" || req.get("x-forwarded-proto") === "https" ? "https" : "http";
+  const content = `User-agent: *\nAllow: /\nDisallow: /account\nDisallow: /reset-password\nDisallow: /login\nDisallow: /signup\nDisallow: /forgot-password\n\nSitemap: ${proto}://${host}/sitemap.xml\n`;
+  res.type("text/plain").send(content);
+});
+
+// Dynamic sitemap.xml with canonical search-indexable paths
+app.get("/sitemap.xml", (req, res) => {
+  const host = req.get("host") || "zalemba.lovable.app";
+  const proto = req.protocol === "https" || req.get("x-forwarded-proto") === "https" ? "https" : "http";
+  const base = `${proto}://${host}`;
+  const routes = [
+    { loc: "", priority: "1.0", changefreq: "weekly" },
+    { loc: "landing/cv", priority: "0.9", changefreq: "weekly" },
+    { loc: "landing/job-application", priority: "0.9", changefreq: "weekly" },
+    { loc: "landing/helsb", priority: "0.9", changefreq: "weekly" },
+    { loc: "landing/internship-application", priority: "0.9", changefreq: "weekly" },
+    { loc: "landing/resignation-letter", priority: "0.8", changefreq: "monthly" },
+    { loc: "image-to-text", priority: "0.8", changefreq: "monthly" },
+    { loc: "create/cv", priority: "0.8", changefreq: "monthly" },
+    { loc: "create/job-application", priority: "0.8", changefreq: "monthly" },
+    { loc: "create/helsb", priority: "0.8", changefreq: "monthly" },
+    { loc: "create/school-letter", priority: "0.7", changefreq: "monthly" },
+    { loc: "create/business", priority: "0.7", changefreq: "monthly" },
+    { loc: "create/other-letter", priority: "0.7", changefreq: "monthly" },
+  ];
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${routes
+  .map(
+    (r) => `  <url>
+    <loc>${base}${r.loc ? `/${r.loc}` : "/"}</loc>
+    <changefreq>${r.changefreq}</changefreq>
+    <priority>${r.priority}</priority>
+  </url>`
+  )
+  .join("\n")}
+</urlset>`;
+
+  res.type("application/xml").send(xml);
+});
+
 async function startServer() {
   if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.resolve(__dirname, "dist")));

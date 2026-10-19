@@ -54,14 +54,19 @@ export function parseHash(): RouteInfo {
     };
   }
 
-  // Handle standard hash route like "#/login?redirect=..." or "#create/letter"
-  const normalized = rawHash.startsWith("/") ? rawHash : "/" + rawHash;
-  const [pathPart, queryPart] = normalized.split("?");
-  const path = pathPart || "/";
+  // Handle standard hash route like "#/login?redirect=..." or clean path for SEO crawling
+  let path = "/";
+  if (rawHash) {
+    const normalized = rawHash.startsWith("/") ? rawHash : "/" + rawHash;
+    const [pathPart, queryPart] = normalized.split("?");
+    path = pathPart || "/";
 
-  if (queryPart) {
-    const hashParams = new URLSearchParams(queryPart);
-    hashParams.forEach((val, key) => search.set(key, val));
+    if (queryPart) {
+      const hashParams = new URLSearchParams(queryPart);
+      hashParams.forEach((val, key) => search.set(key, val));
+    }
+  } else if (typeof window !== "undefined" && window.location.pathname && window.location.pathname !== "/") {
+    path = window.location.pathname;
   }
 
   // Also check if flow=recovery was in the search params
@@ -108,9 +113,11 @@ export function matchRoute(pattern: string, path: string): Record<string, string
 }
 
 if (typeof window !== "undefined") {
-  window.addEventListener("hashchange", () => {
+  const handleRouteChange = () => {
     currentRoute = parseHash();
     window.scrollTo(0, 0);
     listeners.forEach((l) => l());
-  });
+  };
+  window.addEventListener("hashchange", handleRouteChange);
+  window.addEventListener("popstate", handleRouteChange);
 }
